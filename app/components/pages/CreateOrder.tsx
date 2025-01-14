@@ -34,12 +34,14 @@ import {
 } from "@/components/ui/select"
 import { useOrderStore } from "@/store/orders.store"
 import { useRouter } from "next/navigation"
+import { useNotificationStore } from "@/store/notifications.store"
 
 const ITEMS_PER_PAGE = 5;
 
 export default function OrderForm() {
     const router = useRouter();
     const { addNewOrder } = useOrderStore();
+    const { addNotification } = useNotificationStore();
 
     const [selectedItems, setSelectedItems] = useState<OrderItems[]>([])
     const [searchQuery, setSearchQuery] = useState("")
@@ -130,6 +132,11 @@ export default function OrderForm() {
         setIsSubmitting(true)
         setPaymentStatus('processing')
         addOrderToStore();
+        addNotification({
+            message: 'New order received!',
+            timestamp: new Date(),
+            type: 'order'
+        })
 
         try {
             await new Promise(resolve => setTimeout(resolve, 2000))

@@ -11,6 +11,7 @@ interface OrderState{
     deleteOrder: (orderId: string) => void;
     setLoading: (loading: boolean) => void;
     setError: (error: string) => void;
+    updateOrderStatus: (orderId: string, status: string) => void;
 }
 
 export const useOrderStore = create<OrderState>((set) => ({
@@ -21,5 +22,8 @@ export const useOrderStore = create<OrderState>((set) => ({
     addNewOrder: (order: Order) => set((state) => ({ orders: [...state.orders, order] })),
     deleteOrder: (orderId: string) => set((state) => ({ orders: state.orders.filter(order => order.id !== orderId) })),
     setLoading: (loading: boolean) => set({ loading }),
-    setError: (error: string) => set({ error })
+    setError: (error: string) => set({ error }),
+    updateOrderStatus: (orderId: string, status: string) => set((state) => ({
+        orders: state.orders.map(order => order.id === orderId ? { ...order, status } : order)
+    }))
 }))

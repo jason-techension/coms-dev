@@ -96,7 +96,7 @@ export const ORDERS: Order[] = [
         },
         products: ORDER_1,
         date: '2021-08-01',
-        status: "In Delivery",
+        status: "Pending",
         total: ORDER_1.reduce((acc, item) => acc + item.total, 0)
     }
 ]
