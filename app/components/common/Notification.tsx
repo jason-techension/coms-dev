@@ -55,7 +55,7 @@ export default function NotificationBell() {
                                 setIsOpen(false)
                             }}
                         >
-                            Mark all as read
+                            Tandai terbaca semua
                         </Button>
                     )}
                 </div>

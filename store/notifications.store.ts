@@ -12,25 +12,18 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
     notifications: [
         {
             id: '1',
-            message: 'New order #123 received',
+            message: 'Order baru #123 diterima',
             timestamp: new Date(),
             read: false,
             type: 'order'
         },
         {
             id: '2',
-            message: 'Order #120 has been completed',
+            message: 'Order #120 telah sampai di tujuan',
             timestamp: new Date(Date.now() - 3600000),
             read: false,
             type: 'order'
         },
-        {
-            id: '3',
-            message: 'System maintenance scheduled',
-            timestamp: new Date(Date.now() - 7200000),
-            read: true,
-            type: 'system'
-        }
     ],
     markAsRead: (id) => set((state) => ({
         notifications: state.notifications.map((notification) =>

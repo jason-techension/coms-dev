@@ -133,7 +133,7 @@ export default function OrderForm() {
         setPaymentStatus('processing')
         addOrderToStore();
         addNotification({
-            message: 'New order received!',
+            message: 'Order baru diterima!',
             timestamp: new Date(),
             type: 'order'
         })
