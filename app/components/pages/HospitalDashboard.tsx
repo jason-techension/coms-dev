@@ -32,10 +32,10 @@ export default function HospitalDashboard() {
         setIsModalOpen(true);
     };
 
-    const handleDeliveryClick = (order: Order) => {
-        setSelectedOrder(order);
-        setIsModalDeliveryOpen(true);
-    }
+    // const handleDeliveryClick = (order: Order) => {
+    //     setSelectedOrder(order);
+    //     setIsModalDeliveryOpen(true);
+    // }
 
     return (
         <div className="space-y-6">
@@ -49,6 +49,7 @@ export default function HospitalDashboard() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>ID</TableHead>
+                                <TableHead>Reference ID</TableHead>
                                 <TableHead>Jumlah Barang</TableHead>
                                 <TableHead>Tanggal Dibuat</TableHead>
                                 <TableHead>Total Pembayaran</TableHead>
@@ -56,9 +57,10 @@ export default function HospitalDashboard() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {orders.map((order) => (
+                            {orders.map((order, idx) => (
                                 <TableRow key={order.id}>
-                                    <TableCell>{order.id}</TableCell>
+                                    <TableCell className="truncate">{order.id}</TableCell>
+                                    <TableCell>{idx + 1}</TableCell>
                                     <TableCell>
                                         <button
                                             onClick={() => handleOrderClick(order)}
@@ -70,15 +72,16 @@ export default function HospitalDashboard() {
                                     <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                                     <TableCell>Rp {order.total?.toLocaleString('id-ID')}</TableCell>
                                     <TableCell>
-                                        {order.status === 'In Delivery' ?
+                                        {/* {order.status === 'In Delivery' ?
                                             <button
                                                 onClick={() => handleDeliveryClick(order)}
                                                 className="text-blue-600 hover:underline cursor-pointer"
                                             >
                                                 {order.status}
                                             </button> :
-                                            <p>{order.status}</p>
-                                        }
+                                            <p></p>
+                                        } */}
+                                        {order.status}
                                     </TableCell>
                                 </TableRow>
                             ))}

@@ -28,6 +28,7 @@ import { useState } from "react"
 import { Order } from "@/types/Order"
 import { DUMMY_TRANSPORTATIONS } from "@/constants/dummy"
 import { STATUS_OPTIONS } from "@/constants/constants"
+import Link from "next/link"
 
 export default function DistributorDashboard() {
     const { orders, updateOrderStatus } = useOrderStore();
@@ -57,11 +58,6 @@ export default function DistributorDashboard() {
         setIsModalOpen(true);
     };
 
-    const handleDeliveryClick = (order: Order) => {
-        setSelectedOrder(order);
-        setIsModalDeliveryOpen(true);
-    }
-
     return (
         <div className="space-y-6">
             <Card>
@@ -74,17 +70,20 @@ export default function DistributorDashboard() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>ID</TableHead>
+                                <TableHead>Reference ID</TableHead>
                                 <TableHead>Pemesan</TableHead>
                                 <TableHead>Jumlah Barang</TableHead>
                                 <TableHead>Tanggal Diterima</TableHead>
                                 <TableHead>Total Pembayaran</TableHead>
                                 <TableHead>Status</TableHead>
+                                <TableHead>Track Delivery</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {orders.map((order) => (
+                            {orders.map((order, idx) => (
                                 <TableRow key={order.id}>
                                     <TableCell>{order.id}</TableCell>
+                                    <TableCell>{idx + 1}</TableCell>
                                     <TableCell>{order.hospital.name}</TableCell>
                                     <TableCell>
                                         <button
@@ -97,14 +96,7 @@ export default function DistributorDashboard() {
                                     <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                                     <TableCell>Rp {order.total?.toLocaleString('id-ID')}</TableCell>
                                     <TableCell>
-                                        {order.status === "In Delivery" ? <>
-                                            <button
-                                                onClick={() => handleDeliveryClick(order)}
-                                                className="text-blue-600 hover:underline cursor-pointer"
-                                            >
-                                                {order.status}
-                                            </button>
-                                        </> : <>
+                                        <>
                                             <Select
                                                 value={order.status}
                                                 onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
@@ -134,7 +126,14 @@ export default function DistributorDashboard() {
                                                     ))}
                                                 </SelectContent>
                                             </Select>
-                                        </>}
+                                        </>
+
+
+                                    </TableCell>
+                                    <TableCell>
+                                        <Link className="text-blue-600 hover:underline cursor-pointer" href={`distributor/tracking/${order.id}`}>
+                                            Lihat Pengantaran
+                                        </Link>
                                     </TableCell>
                                 </TableRow>
                             ))}

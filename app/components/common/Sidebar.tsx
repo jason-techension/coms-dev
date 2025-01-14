@@ -25,6 +25,11 @@ const DISTRIBUTOR_NAV_ITEMS = [
         href: '/distributor'
     },
     // {
+    //     icon: Truck,
+    //     label: 'Track Deliveries',
+    //     href: '/distributor/tracking'
+    // },
+    // {
     //     icon: ListPlus,
     //     label: 'Buat Order',
     //     href: '/distributor/order'

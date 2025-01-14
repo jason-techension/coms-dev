@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from "react"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -13,44 +13,19 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Trash2, Search, Plus, Loader2, CheckCircle2 } from "lucide-react"
-import { Order, OrderItems } from "@/types/Order"
+import { Search, Plus } from "lucide-react"
 import { Item } from "@/types/Item"
-import { DISTRIBUTORS, HOSPITALS, ITEMS } from "@/constants/dummy"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { useOrderStore } from "@/store/orders.store"
-import { useRouter } from "next/navigation"
-import { useNotificationStore } from "@/store/notifications.store"
+import { ITEMS } from "@/constants/dummy"
+import { useCartStore } from "@/store/cart.store"
 
 const ITEMS_PER_PAGE = 5;
 
 export default function OrderForm() {
-    const router = useRouter();
-    const { addNewOrder } = useOrderStore();
-    const { addNotification } = useNotificationStore();
+    const { addItem, selectedItems } = useCartStore();
 
-    const [selectedItems, setSelectedItems] = useState<OrderItems[]>([])
     const [searchQuery, setSearchQuery] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
     const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({})
-    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
-    const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'success' | 'error'>('pending')
-    const [paymentMethod, setPaymentMethod] = useState<string>('')
-    const [isSubmitting, setIsSubmitting] = useState(false)
 
     // Filter and paginate items
     const filteredItems = ITEMS.filter(item =>
@@ -81,35 +56,23 @@ export default function OrderForm() {
                 return
             }
 
-            setSelectedItems(prev =>
-                prev.map(selected =>
-                    selected.product.id === item.id
-                        ? {
-                            ...selected,
-                            quantity: newQuantity,
-                            total: item.price * newQuantity,
-                        }
-                        : selected
-                )
-            )
+            addItem({
+                id: crypto.randomUUID(),
+                product: item,
+                quantity: newQuantity,
+                total: item.price * newQuantity,
+            })
         } else {
-            setSelectedItems(prev => [
-                ...prev,
-                {
-                    id: crypto.randomUUID(),
-                    product: item,
-                    quantity: quantity,
-                    total: item.price * quantity,
-                },
-            ])
+            addItem({
+                id: crypto.randomUUID(),
+                product: item,
+                quantity: quantity,
+                total: item.price * quantity,
+            })
         }
 
         // Reset quantity for this item
         setSelectedQuantities(prev => ({ ...prev, [item.id]: 1 }))
-    }
-
-    const handleRemoveItem = (itemId: string) => {
-        setSelectedItems(prev => prev.filter(item => item.id !== itemId))
     }
 
     const handleQuantityChange = (itemId: string, value: string) => {
@@ -117,75 +80,6 @@ export default function OrderForm() {
         if (isNaN(num) || num < 1) return
         setSelectedQuantities(prev => ({ ...prev, [itemId]: num }))
     }
-
-    const handleSubmitOrder = () => {
-        setIsPaymentModalOpen(true)
-        setPaymentStatus('pending')
-    }
-
-    const handleProcessPayment = async () => {
-        if (!paymentMethod) {
-            alert('Please select a payment method')
-            return
-        }
-
-        setIsSubmitting(true)
-        setPaymentStatus('processing')
-        addOrderToStore();
-        addNotification({
-            message: 'Order baru diterima!',
-            timestamp: new Date(),
-            type: 'order'
-        })
-
-        try {
-            await new Promise(resolve => setTimeout(resolve, 2000))
-            setPaymentStatus('success')
-        } catch (error) {
-            console.log('error', error)
-            setPaymentStatus('error')
-        } finally {
-            setIsSubmitting(false)
-            router.push('/hospital')
-        }
-    }
-
-    const handleClosePayment = () => {
-        if (paymentStatus === 'success') {
-            // Reset the form
-            setSelectedItems([])
-            setSelectedQuantities({})
-        }
-        setIsPaymentModalOpen(false)
-        setPaymentStatus('pending')
-        setPaymentMethod('')
-    }
-
-    const addOrderToStore = () => {
-        const hospital = HOSPITALS[0];
-        const distributor = DISTRIBUTORS[0];
-
-        // const orderItems = selectedItems.map(item => {
-        //     return {
-        //         product: item.product,
-        //         quantity: item.quantity
-        //     }
-        // })
-
-        const newOrder: Order = {
-            id: crypto.randomUUID(),
-            hospital,
-            distributor,
-            products: selectedItems,
-            total: total,
-            status: 'Pending',
-            date: new Date().toISOString()
-        }
-
-        addNewOrder(newOrder);
-    }
-
-    const total = selectedItems.reduce((sum, item) => sum + item.total, 0)
 
     return (
         <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -197,16 +91,16 @@ export default function OrderForm() {
                 <CardContent className="space-y-6">
                     {/* Available Items Section */}
                     <div className="space-y-4">
-                        <div className="flex items-center gap-4">
-                            <Search className="h-4 w-4 text-gray-400" />
+                        <div className="relative max-w-sm">
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                             <Input
-                                placeholder="Cari produk..."
+                                placeholder="Search products..."
                                 value={searchQuery}
                                 onChange={(e) => {
                                     setSearchQuery(e.target.value)
                                     setCurrentPage(1)
                                 }}
-                                className="max-w-sm"
+                                className="pl-10"
                             />
                         </div>
 
@@ -276,76 +170,10 @@ export default function OrderForm() {
                             </Button>
                         </div>
                     </div>
-
-                    {/* Selected Items Section */}
-                    <div className="mt-8">
-                        <Table>
-                            <TableCaption>Keranjang Belanja</TableCaption>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Nama Produk</TableHead>
-                                    <TableHead>Jumlah</TableHead>
-                                    <TableHead>Harga Satuan</TableHead>
-                                    <TableHead>Total</TableHead>
-                                    <TableHead></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {selectedItems.map(item => (
-                                    <TableRow key={item.id}>
-                                        <TableCell>{item.product.name}</TableCell>
-                                        <TableCell>{item.quantity}</TableCell>
-                                        <TableCell>
-                                            Rp {item.product.price.toLocaleString('id-ID')}
-                                        </TableCell>
-                                        <TableCell>
-                                            Rp {item.total.toLocaleString('id-ID')}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => handleRemoveItem(item.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                                {selectedItems.length > 0 && (
-                                    <TableRow>
-                                        <TableCell colSpan={3} className="text-right font-bold">
-                                            Total Akhir
-                                        </TableCell>
-                                        <TableCell className="font-bold">
-                                            Rp {total.toLocaleString('id-ID')}
-                                        </TableCell>
-                                        <TableCell />
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
                 </CardContent>
-                <CardFooter className="flex justify-end">
-                    <Button
-                        size="lg"
-                        disabled={selectedItems.length === 0}
-                        // onClick={() => {
-                        //     // Handle order submission here
-                        //     console.log('Order submitted:', {
-                        //         items: selectedItems,
-                        //         total
-                        //     })
-                        // }}
-                        onClick={handleSubmitOrder}
-                    >
-                        Buat Pesanan
-                    </Button>
-                </CardFooter>
 
                 {/* Payment Modal */}
-                <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
+                {/* <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
                     <DialogContent className="sm:max-w-[425px]">
                         <DialogHeader>
                             <DialogTitle>
@@ -431,7 +259,7 @@ export default function OrderForm() {
                             )}
                         </DialogFooter>
                     </DialogContent>
-                </Dialog>
+                </Dialog> */}
             </Card>
         </div>
     )
